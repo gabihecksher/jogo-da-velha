@@ -18,4 +18,4 @@ Como jogar:
 
 5º) Para fazer uma jogada basta digitar o número da posição escolhida com um ponto final.
 
-Agora é só jogar contra a nossa inteligência artificial! :)
+Agora é só jogar contra a nossa inteligência artificial :)
