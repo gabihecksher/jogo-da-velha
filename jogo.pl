@@ -49,7 +49,7 @@ mover_x([A,B,C,D,E,' ',G,H,I], 6, [A,B,C,D,E,x,G,H,I]).
 mover_x([A,B,C,D,E,F,' ',H,I], 7, [A,B,C,D,E,F,x,H,I]).
 mover_x([A,B,C,D,E,F,G,' ',I], 8, [A,B,C,D,E,F,G,x,I]).
 mover_x([A,B,C,D,E,F,G,H,' '], 9, [A,B,C,D,E,F,G,H,x]).
-mover_x(Tab,_,Tab) :- write('Jogada proibida'), nl.
+mover_x(Tab,_,Tab) :- write('Jogada proibida. Tente uma posição válida.'), inicializar(Tab).
 
 imprimir_tabuleiro([A,B,C,D,E,F,G,H,I]) :-
 	write('|'),
