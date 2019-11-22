@@ -1,7 +1,8 @@
 comecar :- como_jogar, inicializar([' ',' ',' ',' ',' ',' ',' ',' ',' ']).
+assistir:- inicializarT([' ',' ',' ',' ',' ',' ',' ',' ',' ']).
 
-inicializar(Tab) :- ganhar(Tab,x), write('Voce ganhou!').
-inicializar(Tab) :- ganhar(Tab,o), write('Computador ganhou').
+inicializar(Tab) :- ganhar(Tab,x), write('X ganhou!'), abort().
+inicializar(Tab) :- ganhar(Tab,o), write('o ganhou!'), abort().
 inicializar(Tab) :- 
 	read(N),
 	mover_x(Tab,N,NovoTab),
@@ -9,6 +10,16 @@ inicializar(Tab) :-
 	jogar_o(NovoTab,MaisNovoTab),
 	imprimir_tabuleiro(MaisNovoTab),
 	inicializar(MaisNovoTab).
+
+inicializarT(Tab) :- ganhar(Tab,x), write('x ganhou!'),!.
+inicializarT(Tab) :- ganhar(Tab,o), write('o ganhou!'),!.
+inicializarT(Tab) :- 
+    jogar_x(Tab,NovoTab),
+	imprimir_tabuleiro(NovoTab),
+	jogar_o(NovoTab,MaisNovoTab),
+    !,
+	imprimir_tabuleiro(MaisNovoTab),
+	inicializarT(MaisNovoTab).
 
 ganhar(Tab,Jogador) :-
 	ganhar_linha(Tab,Jogador);
@@ -66,17 +77,40 @@ como_jogar :-
 	write('Ex: ?-5.'),nl,nl,
 	imprimir_tabuleiro([1,2,3,4,5,6,7,8,9]).
 
+%X tenta achar uma posicao se ganha
+jogar_x(Tab, NovoTab) :-
+	mover_o(Tab,x,NovoTab),
+	ganhar(NovoTab,x).
 
+%X tenta achar uma posicao se não perde
+jogar_x(Tab, NovoTab) :- 
+	mover_o(Tab,x,NovoTab),
+	not(o_pode_ganhar(NovoTab)).
+
+jogar_x(Tab, NovoTab) :- 
+	mover_o(Tab,x,NovoTab).
+
+jogar_x(Tab, NovoTab) :-
+    not(member(' ',Tab)),!,
+    write('Empate'),nl,!,
+    abort().
+
+o_pode_ganhar(Tab) :-
+    mover_o(Tab,o,NovoTab),
+	ganhar(NovoTab,o),
+	write('o pode ganhar'),nl.
+	
 x_pode_ganhar(Tab) :-
 	mover_o(Tab,x,NovoTab),
-	ganhar(NovoTab,x),
-	write('X pode ganhar'),nl,
-	imprimir_tabuleiro(NovoTab),nl.
-
+    ganhar(NovoTab,x),
+	write('X pode ganhar'),nl.
+	
+%jogar com essa se ganha
 jogar_o(Tab, NovoTab) :- 
 	mover_o(Tab,o,NovoTab),
 	ganhar(NovoTab,o),!.
 
+%%jogar com essa se nao perde
 jogar_o(Tab, NovoTab) :- 
 	mover_o(Tab,o,NovoTab),
 	not(x_pode_ganhar(NovoTab)).
@@ -86,4 +120,5 @@ jogar_o(Tab, NovoTab) :-
 
 jogar_o(Tab, NovoTab) :- 
 	not(member(' ',Tab)),!,
-	write('Empate'),nl.
+    write('Empate'),nl,!,
+    abort().
