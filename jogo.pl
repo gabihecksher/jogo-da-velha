@@ -33,43 +33,41 @@ inicializarTT(Tab) :-
 	imprimir_tabuleiro(NovoTab),
 	%jogar_o(NovoTab,MaisNovoTab),
     melhor_jogada(NovoTab,MaisNovoTab),
-    %!,
+    write('saiu de melhor jogada'),
+    !,
 	imprimir_tabuleiro(MaisNovoTab),
 	inicializarTT(MaisNovoTab).
 
 melhor_jogada(NovoTab,MaisNovoTab) :-
-    minmax(NovoTab,MaisNovoTab,_,o).
+    minmax(NovoTab,MaisNovoTab,_,o);
+
+membro(X,[X|_]).
+membro(X,[_|C]):-
+membro(X,C).
 
 minmax(Tab, MelhorNovoTab, Val, Jogador1):-
     outro(Jogador1, Jogador2),
+	member(' ',Tab),
     bagof(NovoTab, jogar_v(Tab, Jogador1, NovoTab), NovoTabList),
     nl,
     write(NovoTabList),
-    melhor(NovoTabList, MelhorNovoTab, Val, Jogador2), !.
+    melhor(NovoTabList, MelhorNovoTab, Val, Jogador2),!.
 minmax(Tab, _, Val, _):-
-    utilidade(Tab, Val).
+    utilidade(Tab, Val),!.
 
 jogar_v(Tab, x, NovoTab) :- jogar_x(Tab, NovoTab).
 jogar_v(Tab, o, NovoTab) :- jogar_o(Tab, NovoTab).
 
 melhor([Tab], Tab, Val, Jogador) :-
-    minmax(Tab, _, Val, Jogador), !.
+    minmax(Tab, _, Val, Jogador).
 melhor([Tab | TabLista], MelhorTab, MelhorVal, Jogador) :-
     minmax(Tab, _, Val1, Jogador),
     melhor(TabLista, Tab2, Val2, Jogador),
-    melhor_de(Tab, Val1, Tab2, Val2, MelhorTab, MelhorVal).
+    melhor_de(Val1, Val2),
+    write('e agora jose').
 
-melhor_de(Tab, Val, _, Val1, Tab, Val) :-   % Pos0 better than Pos1
-    min_para_mover(Tab),                         % MIN to move in Pos0
-    Val > Val1, !                             % MAX prefers the greater value
-    ;
-    max_para_mover(Tab),                         % MAX to move in Pos0
-    Val < Val1, !.                            % MIN prefers the lesser value
-melhor_de(_, _, Tab, Val, Tab, Val).        % Otherwise Pos1 better than Pos0
-
-min_para_mover([o, _, _]). % Conferir se o ou x
-
-max_para_mover([x, _, _]).
+melhor_de(Val, Val1) :-                         
+    Val > Val1.
 
 utilidade(Tab, 1) :- ganhar(Tab, o).      
 utilidade(Tab, -1) :- ganhar(Tab, x).      
@@ -151,8 +149,8 @@ jogar_x(Tab, NovoTab) :-
 
 jogar_x(Tab, _) :-
     not(member(' ',Tab)),!,
-    write('Empate'),
-    abort().
+    write('Empate').%,
+    %abort().
 
 o_pode_ganhar(Tab) :-
     mover_o(Tab,o,NovoTab),
@@ -184,11 +182,9 @@ jogar_o(Tab, NovoTab) :-
 
 jogar_o(Tab, _) :- 
 	not(member(' ',Tab)),!,
-    write('Empate'),
-    abort().
+    write('Empate').
+%,
+ %   abort().
 
-membro(X,[X|_]).
-membro(X,[_|C]):-
-membro(X,C).
 
 
