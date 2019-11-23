@@ -1,5 +1,6 @@
 comecar :- como_jogar, inicializar([' ',' ',' ',' ',' ',' ',' ',' ',' ']).
 assistir:- inicializarT([' ',' ',' ',' ',' ',' ',' ',' ',' ']).
+comBusca:- inicializarTT([' ',' ',' ',' ',' ',' ',' ',' ',' ']).
 
 inicializar(Tab) :- ganhar(Tab,x), write('X ganhou!'), abort().
 inicializar(Tab) :- ganhar(Tab,o), write('o ganhou!'), abort().
@@ -20,6 +21,59 @@ inicializarT(Tab) :-
     !,
 	imprimir_tabuleiro(MaisNovoTab),
 	inicializarT(MaisNovoTab).
+
+outro(x, o).
+outro(o, x).
+
+inicializarTT(Tab) :- ganhar(Tab,x), write('x ganhou!'),!.
+inicializarTT(Tab) :- ganhar(Tab,o), write('o ganhou!'),!.
+inicializarTT(Tab) :- 
+    write('Proxima Jogada'),
+    jogar_x(Tab,NovoTab),
+	imprimir_tabuleiro(NovoTab),
+	%jogar_o(NovoTab,MaisNovoTab),
+    melhor_jogada(NovoTab,MaisNovoTab),
+    %!,
+	imprimir_tabuleiro(MaisNovoTab),
+	inicializarTT(MaisNovoTab).
+
+melhor_jogada(NovoTab,MaisNovoTab) :-
+    minmax(NovoTab,MaisNovoTab,_,o).
+
+minmax(Tab, MelhorNovoTab, Val, Jogador1):-
+    outro(Jogador1, Jogador2),
+    bagof(NovoTab, jogar_v(Tab, Jogador1, NovoTab), NovoTabList),
+    nl,
+    write(NovoTabList),
+    melhor(NovoTabList, MelhorNovoTab, Val, Jogador2), !.
+minmax(Tab, _, Val, _):-
+    utilidade(Tab, Val).
+
+jogar_v(Tab, x, NovoTab) :- jogar_x(Tab, NovoTab).
+jogar_v(Tab, o, NovoTab) :- jogar_o(Tab, NovoTab).
+
+melhor([Tab], Tab, Val, Jogador) :-
+    minmax(Tab, _, Val, Jogador), !.
+melhor([Tab | TabLista], MelhorTab, MelhorVal, Jogador) :-
+    minmax(Tab, _, Val1, Jogador),
+    melhor(TabLista, Tab2, Val2, Jogador),
+    melhor_de(Tab, Val1, Tab2, Val2, MelhorTab, MelhorVal).
+
+melhor_de(Tab, Val, _, Val1, Tab, Val) :-   % Pos0 better than Pos1
+    min_para_mover(Tab),                         % MIN to move in Pos0
+    Val > Val1, !                             % MAX prefers the greater value
+    ;
+    max_para_mover(Tab),                         % MAX to move in Pos0
+    Val < Val1, !.                            % MIN prefers the lesser value
+melhor_de(_, _, Tab, Val, Tab, Val).        % Otherwise Pos1 better than Pos0
+
+min_para_mover([o, _, _]). % Conferir se o ou x
+
+max_para_mover([x, _, _]).
+
+utilidade(Tab, 1) :- ganhar(Tab, o).      
+utilidade(Tab, -1) :- ganhar(Tab, x).      
+utilidade(_, 0).      
 
 ganhar(Tab,Jogador) :-
 	ganhar_linha(Tab,Jogador);
@@ -81,44 +135,60 @@ como_jogar :-
 jogar_x(Tab, NovoTab) :-
 	mover_o(Tab,x,NovoTab),
 	ganhar(NovoTab,x).
+    %write('X ganha com essa:'),
+    %imprimir_tabuleiro(NovoTab).
+
 
 %X tenta achar uma posicao se não perde
 jogar_x(Tab, NovoTab) :- 
 	mover_o(Tab,x,NovoTab),
 	not(o_pode_ganhar(NovoTab)).
+    %write('X não perde com essa:'),
+    %imprimir_tabuleiro(NovoTab).
 
 jogar_x(Tab, NovoTab) :- 
 	mover_o(Tab,x,NovoTab).
 
-jogar_x(Tab, NovoTab) :-
+jogar_x(Tab, _) :-
     not(member(' ',Tab)),!,
-    write('Empate'),nl,!,
+    write('Empate'),
     abort().
 
 o_pode_ganhar(Tab) :-
     mover_o(Tab,o,NovoTab),
-	ganhar(NovoTab,o),
-	write('o pode ganhar'),nl.
-	
+	ganhar(NovoTab,o).
+    %write('o pode ganhar com: '),nl,
+	%imprimir_tabuleiro(NovoTab).	
+
 x_pode_ganhar(Tab) :-
 	mover_o(Tab,x,NovoTab),
-    ganhar(NovoTab,x),
-	write('X pode ganhar'),nl.
+    ganhar(NovoTab,x).
+	%write('X pode ganhar com:'),nl,
+    %imprimir_tabuleiro(NovoTab).	
 	
 %jogar com essa se ganha
-jogar_o(Tab, NovoTab) :- 
+jogar_o(Tab, NovoTab) :-
+    %write('Tentou ganhar'),nl,
 	mover_o(Tab,o,NovoTab),
 	ganhar(NovoTab,o),!.
 
 %%jogar com essa se nao perde
 jogar_o(Tab, NovoTab) :- 
+    %write('Tentou nao perder'),nl,
 	mover_o(Tab,o,NovoTab),
 	not(x_pode_ganhar(NovoTab)).
 
 jogar_o(Tab, NovoTab) :- 
+    %write('Tentou nada'),nl,
 	mover_o(Tab,o,NovoTab).
 
-jogar_o(Tab, NovoTab) :- 
+jogar_o(Tab, _) :- 
 	not(member(' ',Tab)),!,
-    write('Empate'),nl,!,
+    write('Empate'),
     abort().
+
+membro(X,[X|_]).
+membro(X,[_|C]):-
+membro(X,C).
+
+
